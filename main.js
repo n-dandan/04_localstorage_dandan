@@ -5,7 +5,7 @@ function loadData(){const r=localStorage.getItem(STORAGE_KEY);if(!r)return getDe
 function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
 
 function getDefault(){return{
-  settings:{eventName:'ライブ抽選システム',totalWinners:10,remainingWinners:10,loseMessage:'残念！またチャレンジしてね！',adminPassword:'1234',lastInputMethod:'text'},
+  settings:{eventName:'イベント抽選システム',totalWinners:10,remainingWinners:10,loseMessage:'残念！またチャレンジしてね！',adminPassword:'1234',lastInputMethod:'text'},
   prizes:[
     {id:'prize-001',name:'サイン入りポスター',imageUrl:null,winMessage:'サイン入りポスターが当たりました！',totalWinners:5,remainingWinners:5,winners:[]},
     {id:'prize-002',name:'チェキ',imageUrl:null,winMessage:'チェキが当たりました！',totalWinners:3,remainingWinners:3,winners:[]},
@@ -40,11 +40,29 @@ function showPage(page){
 
 function goToLogin(){showPage('login')}
 
+let adminNavCount=0;
+let adminNavTimer=null;
+function handleAdminNav(){
+  adminNavCount++;
+  clearTimeout(adminNavTimer);
+  const btn=document.getElementById('admin-nav-btn');
+  if(adminNavCount>=10){
+    adminNavCount=0;
+    btn.textContent='管理画面へ';
+    goToLogin();
+    return;
+  }
+  btn.textContent='あと'+(10-adminNavCount)+'回';
+  adminNavTimer=setTimeout(()=>{
+    adminNavCount=0;
+    btn.textContent='管理画面へ';
+  },5000);
+}
+
 function renderMain(data){
   const s=data.settings;
   document.getElementById('header-event-name').textContent='🎪 '+s.eventName;
   document.getElementById('display-event-name').textContent=s.eventName;
-  document.getElementById('header-remaining').textContent=s.remainingWinners;
   document.getElementById('remaining-num').textContent=s.remainingWinners;
   document.querySelectorAll('.method-tab').forEach(t=>{t.classList.toggle('active',t.dataset.method===s.lastInputMethod)});
 }
@@ -280,6 +298,26 @@ function exportCSV(){
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='当選履歴.csv';a.click();URL.revokeObjectURL(url);
+}
+
+function exportTicketsCSV(){
+  const data=loadData();
+  const rows=data.tickets.map(t=>{
+    let status='未使用';
+    let prizeName='';
+    if(t.result==='lose'){status='ハズレ'}
+    else if(t.result&&t.result!=='lose'){
+      status='当選';
+      const prize=data.prizes.find(p=>p.id===t.result);
+      prizeName=prize?prize.name:t.result;
+    }else if(t.used){status='使用済'}
+    const time=t.usedAt?new Date(t.usedAt).toLocaleString('ja-JP'):'';
+    return `${t.id},${status},${prizeName},${time}`;
+  });
+  const csv='チケットID,ステータス,当選商品,抽選日時\n'+rows.join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='チケット一覧.csv';a.click();URL.revokeObjectURL(url);
 }
 
 let pendingReset=null;

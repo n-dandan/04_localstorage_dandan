@@ -9,10 +9,12 @@
 </head>
 <body>
 
+
+<!-- 抽選画面 -->
 <div id="page-main" class="page active">
   <div class="header">
     <span class="header-title" id="header-event-name">🎪 ライブ抽選</span>
-    <span class="header-badge">残り <span id="header-remaining">0</span> 枠</span>
+    <a class="header-badge" id="admin-nav-btn" onclick="handleAdminNav()" style="cursor:pointer;text-decoration:none">管理画面へ</a>
   </div>
   <div class="main-content">
     <div class="event-name" id="display-event-name">Loading...</div>
@@ -38,7 +40,6 @@
       <input type="text" class="ticket-input" id="ticket-input" placeholder="チケット番号を入力" maxlength="20">
       <button class="btn-start" id="btn-start">🎰 抽選スタート！</button>
     </div>
-    <a class="admin-link" onclick="goToLogin()">管理画面へ</a>
   </div>
 </div>
 
@@ -74,6 +75,8 @@
   </div>
 </div>
 
+
+<!-- 管理画面 -->
 <div id="page-admin" class="page">
   <div class="header">
     <span class="header-title">⚙️ 管理画面</span>
@@ -129,6 +132,9 @@
       <div class="section-card">
         <div class="section-card-title">チケット一覧</div>
         <div class="ticket-list" id="ticket-list"></div>
+        <div class="row-btns">
+          <button class="btn-secondary" onclick="exportTicketsCSV()">📤 CSVエクスポート</button>
+        </div>
       </div>
     </div>
 
