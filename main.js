@@ -13,15 +13,36 @@ function getDefault(){return{
   ],
   design:{backgroundColor:'#FFF5F9',backgroundPattern:'none',fontFamily:'Nunito'},
   tickets:[
-    {id:'A-001',used:false,usedAt:null,result:null},{id:'A-002',used:false,usedAt:null,result:null},
-    {id:'A-003',used:false,usedAt:null,result:null},{id:'A-004',used:false,usedAt:null,result:null},
-    {id:'A-005',used:false,usedAt:null,result:null},{id:'A-006',used:false,usedAt:null,result:null},
-    {id:'A-007',used:false,usedAt:null,result:null},{id:'A-008',used:false,usedAt:null,result:null},
-    {id:'A-009',used:false,usedAt:null,result:null},{id:'A-010',used:false,usedAt:null,result:null}
+    {id:'A-0001',used:false,usedAt:null,result:null},{id:'A-0002',used:false,usedAt:null,result:null},
+    {id:'A-0003',used:false,usedAt:null,result:null},{id:'A-0004',used:false,usedAt:null,result:null},
+    {id:'A-0005',used:false,usedAt:null,result:null},{id:'A-0006',used:false,usedAt:null,result:null},
+    {id:'A-0007',used:false,usedAt:null,result:null},{id:'A-0008',used:false,usedAt:null,result:null},
+    {id:'A-0009',used:false,usedAt:null,result:null},{id:'A-0010',used:false,usedAt:null,result:null},
+    {id:'A-0011',used:false,usedAt:null,result:null},{id:'A-0012',used:false,usedAt:null,result:null},
+    {id:'A-0013',used:false,usedAt:null,result:null},{id:'A-0014',used:false,usedAt:null,result:null},
+    {id:'A-0015',used:false,usedAt:null,result:null},{id:'A-0016',used:false,usedAt:null,result:null},
+    {id:'A-0017',used:false,usedAt:null,result:null},{id:'A-0018',used:false,usedAt:null,result:null},
+    {id:'A-0019',used:false,usedAt:null,result:null},{id:'A-0020',used:false,usedAt:null,result:null},
+    {id:'0001',used:false,usedAt:null,result:null},{id:'0002',used:false,usedAt:null,result:null},
+    {id:'0003',used:false,usedAt:null,result:null},{id:'0004',used:false,usedAt:null,result:null},
+    {id:'0005',used:false,usedAt:null,result:null},{id:'0006',used:false,usedAt:null,result:null},
+    {id:'0007',used:false,usedAt:null,result:null},{id:'0008',used:false,usedAt:null,result:null},
+    {id:'0009',used:false,usedAt:null,result:null},{id:'0010',used:false,usedAt:null,result:null},
+    {id:'0011',used:false,usedAt:null,result:null},{id:'0012',used:false,usedAt:null,result:null},
+    {id:'0013',used:false,usedAt:null,result:null},{id:'0014',used:false,usedAt:null,result:null},
+    {id:'0015',used:false,usedAt:null,result:null},{id:'0016',used:false,usedAt:null,result:null},
+    {id:'0017',used:false,usedAt:null,result:null},{id:'0018',used:false,usedAt:null,result:null},
+    {id:'0019',used:false,usedAt:null,result:null},{id:'0020',used:false,usedAt:null,result:null},
+    {id:'0021',used:false,usedAt:null,result:null},{id:'0022',used:false,usedAt:null,result:null},
+    {id:'0023',used:false,usedAt:null,result:null},{id:'0024',used:false,usedAt:null,result:null},
+    {id:'0025',used:false,usedAt:null,result:null},{id:'0026',used:false,usedAt:null,result:null},
+    {id:'0027',used:false,usedAt:null,result:null},{id:'0028',used:false,usedAt:null,result:null},
+    {id:'0029',used:false,usedAt:null,result:null},{id:'0030',used:false,usedAt:null,result:null}
   ]
 }}
 
 function showPage(page){
+  stopScanner();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const data=loadData();
   if(page==='main'){
@@ -71,11 +92,58 @@ document.querySelectorAll('.method-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    const data=loadData();data.settings.lastInputMethod=tab.dataset.method;saveData(data);
-    const inp=document.getElementById('ticket-input');
-    inp.placeholder=tab.dataset.method==='text'?'チケット番号を入力':tab.dataset.method==='qr'?'QRコードをスキャン（準備中）':'バーコードをスキャン（準備中）';
+    const method=tab.dataset.method;
+    const data=loadData();data.settings.lastInputMethod=method;saveData(data);
+    stopScanner();
+    if(method==='scan'){
+      startScanner();
+    }else{
+      document.getElementById('ticket-input').placeholder='チケット番号を入力';
+    }
   });
 });
+
+let html5QrCode=null;
+
+function startScanner(){
+  const wrap=document.getElementById('qr-reader-wrap');
+  wrap.style.display='block';
+  const formats=[
+    Html5QrcodeSupportedFormats.QR_CODE,
+    Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,
+    Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,
+    Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,
+    Html5QrcodeSupportedFormats.ITF];
+  html5QrCode=new Html5Qrcode('qr-reader');
+  html5QrCode.start(
+    {facingMode:'environment'},
+    {fps:10,qrbox:{width:240,height:240},formatsToSupport:formats},
+    (decoded)=>{
+      document.getElementById('ticket-input').value=decoded.trim().toUpperCase();
+      stopScanner();
+    },
+    ()=>{}
+  ).catch(()=>{
+    wrap.style.display='none';
+    html5QrCode=null;
+    showError('カメラエラー','カメラへのアクセスができませんでした。\nブラウザの設定を確認してください。');
+    document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelector('.method-tab[data-method="text"]').classList.add('active');
+    const d=loadData();d.settings.lastInputMethod='text';saveData(d);
+  });
+}
+
+function stopScanner(){
+  if(!html5QrCode)return;
+  const qr=html5QrCode;
+  html5QrCode=null;
+  qr.stop().then(()=>{
+    qr.clear();
+    document.getElementById('qr-reader-wrap').style.display='none';
+  }).catch(()=>{
+    document.getElementById('qr-reader-wrap').style.display='none';
+  });
+}
 
 let isSpinning=false;
 document.getElementById('btn-start').addEventListener('click',startRoulette);
@@ -218,7 +286,10 @@ function saveSettings(){
   data.design.backgroundPattern=document.getElementById('s-backgroundPattern').value;
   data.design.fontFamily=document.getElementById('s-fontFamily').value;
   saveData(data);applyDesign(data.design);
-  const msg=document.getElementById('settings-saved');msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);
+  const activeTab=document.querySelector('.admin-tab.active');
+  const msgId=activeTab&&activeTab.dataset.tab==='design'?'design-saved':'settings-saved';
+  const msg=document.getElementById(msgId);
+  if(msg){msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);}
 }
 
 function applyDesign(design){document.documentElement.style.setProperty('--bg',design.backgroundColor)}
@@ -252,6 +323,27 @@ function deletePrize(id){
   const data=loadData();const prize=data.prizes.find(p=>p.id===id);if(!prize)return;
   data.settings.totalWinners-=prize.remainingWinners;data.settings.remainingWinners-=prize.remainingWinners;
   data.prizes=data.prizes.filter(p=>p.id!==id);saveData(data);renderPrizeList();
+}
+
+function importTicketsFromCSV(){
+  const fileInput=document.getElementById('ticket-csv-input');
+  const file=fileInput.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const text=e.target.result.replace(/^﻿/,'');
+    const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    const data=loadData();let added=0;
+    lines.forEach(line=>{
+      const id=line.split(',')[0].trim().toUpperCase();
+      if(!id||id==='チケットID'||id==='ID')return;
+      if(!data.tickets.find(t=>t.id===id)){data.tickets.push({id,used:false,usedAt:null,result:null});added++;}
+    });
+    saveData(data);fileInput.value='';
+    const msg=document.getElementById('tickets-saved');
+    msg.textContent='✅ '+added+'件インポートしました！';msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'),2000);renderTicketList();
+  };
+  reader.readAsText(file,'UTF-8');
 }
 
 function importTickets(){

@@ -54,26 +54,43 @@ body::before {
   background: var(--card);
   border-bottom: 2px solid var(--border);
   padding: 14px 24px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   box-shadow: 0 2px 12px var(--shadow);
 }
 
 .header-title {
+  grid-column: 2;
   font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: var(--pink);
+  text-align: center;
 }
 
 .header-badge {
+  grid-column: 3;
+  justify-self: end;
   background: linear-gradient(135deg, var(--pink), var(--purple));
   color: #fff;
   font-size: 12px;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 20px;
+}
+
+.btn-admin-nav {
+  grid-column: 1;
+  justify-self: start;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .main-content {
@@ -211,6 +228,20 @@ body::before {
   display: flex;
   gap: 6px;
   justify-content: center;
+}
+
+#qr-reader-wrap {
+  display: none;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: #000;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  border-radius: 14px;
 }
 
 .method-tab {
@@ -570,10 +601,10 @@ body::before {
 
 .admin-tab {
   flex: 1;
-  padding: 8px;
+  padding: 6px 4px;
   text-align: center;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   color: var(--text-muted);
@@ -788,6 +819,8 @@ body::before {
 }
 
 .admin-back {
+  grid-column: 3;
+  justify-self: end;
   padding: 8px 14px;
   border-radius: 10px;
   font-size: 12px;
