@@ -745,6 +745,29 @@ body::before {
   font-weight: 600;
 }
 
+.section-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-card-title-row .section-card-title {
+  margin-bottom: 0;
+}
+
+.prize-total-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.prize-total-badge span {
+  color: var(--pink);
+  font-size: 15px;
+}
+
 .ticket-list {
   display: flex;
   flex-direction: column;

@@ -264,7 +264,6 @@ document.querySelectorAll('.admin-tab').forEach(tab=>{
 function renderAdmin(){
   const data=loadData();const s=data.settings;
   document.getElementById('s-eventName').value=s.eventName;
-  document.getElementById('s-totalWinners').value=s.totalWinners;
   document.getElementById('s-loseMessage').value=s.loseMessage;
   document.getElementById('s-lastInputMethod').value=s.lastInputMethod;
   document.getElementById('s-backgroundColor').value=data.design.backgroundColor;
@@ -276,26 +275,45 @@ function renderAdmin(){
 function saveSettings(){
   const data=loadData();
   data.settings.eventName=document.getElementById('s-eventName').value||data.settings.eventName;
-  const tw=parseInt(document.getElementById('s-totalWinners').value);
-  if(!isNaN(tw)&&tw>0)data.settings.totalWinners=tw;
   data.settings.loseMessage=document.getElementById('s-loseMessage').value||data.settings.loseMessage;
-  const newPw=document.getElementById('s-adminPassword').value;
-  if(newPw)data.settings.adminPassword=newPw;
   data.settings.lastInputMethod=document.getElementById('s-lastInputMethod').value;
   data.design.backgroundColor=document.getElementById('s-backgroundColor').value;
   data.design.backgroundPattern=document.getElementById('s-backgroundPattern').value;
   data.design.fontFamily=document.getElementById('s-fontFamily').value;
   saveData(data);applyDesign(data.design);
   const activeTab=document.querySelector('.admin-tab.active');
-  const msgId=activeTab&&activeTab.dataset.tab==='design'?'design-saved':'settings-saved';
+  const tabName=activeTab&&activeTab.dataset.tab;
+  const msgId=tabName==='prizes'?'prizes-saved':'settings-saved';
   const msg=document.getElementById(msgId);
   if(msg){msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);}
+}
+
+function changePassword(){
+  const current=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  const errEl=document.getElementById('pw-error');
+  errEl.style.display='none';
+  const data=loadData();
+  if(current!==data.settings.adminPassword){errEl.textContent='現在のパスワードが違います';errEl.style.display='block';return;}
+  if(!nw){errEl.textContent='新しいパスワードを入力してください';errEl.style.display='block';return;}
+  if(nw!==confirm){errEl.textContent='新しいパスワードが一致しません';errEl.style.display='block';return;}
+  data.settings.adminPassword=nw;
+  saveData(data);
+  document.getElementById('pw-current').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  const msg=document.getElementById('pw-saved');
+  msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);
 }
 
 function applyDesign(design){document.documentElement.style.setProperty('--bg',design.backgroundColor)}
 
 function renderPrizeList(){
   const data=loadData();const el=document.getElementById('prize-list');
+  const total=data.prizes.reduce((s,p)=>s+p.totalWinners,0);
+  const totalEl=document.getElementById('prize-total-count');
+  if(totalEl)totalEl.textContent=total;
   if(!data.prizes.length){el.innerHTML='<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:12px">商品が登録されていません</div>';return}
   el.innerHTML=data.prizes.map((p,i)=>`
     <div class="prize-item">

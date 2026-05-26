@@ -87,28 +87,18 @@
   <div class="admin-content">
     <div class="admin-tabs">
       <div class="admin-tab active" data-tab="settings">基本設定</div>
-      <div class="admin-tab" data-tab="design">デザイン</div>
-      <div class="admin-tab" data-tab="prizes">商品設定</div>
-      <div class="admin-tab" data-tab="tickets">チケット管理</div>
-      <div class="admin-tab" data-tab="history">当選履歴</div>
+      <div class="admin-tab" data-tab="prizes">抽選設定</div>
+      <div class="admin-tab" data-tab="tickets">チケットID管理</div>
+      <div class="admin-tab" data-tab="history">当選管理</div>
+      <div class="admin-tab" data-tab="password">パスワード</div>
     </div>
 
     <div class="tab-panel active" id="tab-settings">
       <div class="section-card">
         <div class="section-card-title">イベント設定</div>
         <div class="form-group"><div class="form-label">イベント名</div><input type="text" class="form-input" id="s-eventName" placeholder="例: Summer Live 2025"></div>
-        <div class="form-group"><div class="form-label">総当選数</div><input type="number" class="form-input" id="s-totalWinners" min="1" placeholder="例: 10"></div>
-        <div class="form-group"><div class="form-label">ハズレ時コメント</div><input type="text" class="form-input" id="s-loseMessage" placeholder="例: またチャレンジしてね！"></div>
-        <div class="form-group"><div class="form-label">管理パスワード変更（変更しない場合は空欄）</div><input type="password" class="form-input" id="s-adminPassword" placeholder="新しいパスワード"></div>
         <div class="form-group"><div class="form-label">チケット入力方式（デフォルト）</div><select class="form-input" id="s-lastInputMethod"><option value="text">テキスト入力</option><option value="scan">QRコード/バーコード</option></select></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="btn-save" onclick="saveSettings()">💾 設定を保存</button>
-        <span class="success-msg" id="settings-saved">✅ 保存しました！</span>
-      </div>
-    </div>
-
-    <div class="tab-panel" id="tab-design">
       <div class="section-card">
         <div class="section-card-title">デザイン設定</div>
         <div class="form-group"><div class="form-label">背景色</div><input type="color" class="form-input" id="s-backgroundColor" value="#FFF5F9" style="height:44px;cursor:pointer"></div>
@@ -117,13 +107,23 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <button class="btn-save" onclick="saveSettings()">💾 設定を保存</button>
-        <span class="success-msg" id="design-saved">✅ 保存しました！</span>
+        <span class="success-msg" id="settings-saved">✅ 保存しました！</span>
       </div>
     </div>
 
     <div class="tab-panel" id="tab-prizes">
       <div class="section-card">
-        <div class="section-card-title">商品一覧</div>
+        <div class="form-group"><div class="form-label">ハズレ時コメント</div><input type="text" class="form-input" id="s-loseMessage" placeholder="例: またチャレンジしてね！"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <button class="btn-save" onclick="saveSettings()">💾 設定を保存</button>
+          <span class="success-msg" id="prizes-saved">✅ 保存しました！</span>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title-row">
+          <div class="section-card-title">商品一覧</div>
+          <div class="prize-total-badge">合計当選数：<span id="prize-total-count">0</span> 件</div>
+        </div>
         <div id="prize-list"></div>
         <button class="btn-secondary" onclick="openAddPrize()">＋ 商品を追加</button>
       </div>
@@ -131,7 +131,7 @@
 
     <div class="tab-panel" id="tab-tickets">
       <div class="section-card">
-        <div class="section-card-title">チケット一括インポート</div>
+        <div class="section-card-title">チケットID一括登録</div>
         <div class="form-group"><div class="form-label">テキスト入力（1行に1つ）</div><textarea class="form-textarea" id="ticket-import-area" placeholder="A-001&#10;A-002&#10;A-003"></textarea></div>
         <div class="row-btns">
           <button class="btn-save" onclick="importTickets()">📥 テキストを取込</button>
@@ -141,7 +141,7 @@
           <div class="form-label">CSVファイル</div>
           <input type="file" class="form-input" id="ticket-csv-input" accept=".csv,text/csv" style="padding:8px 14px">
         </div>
-        <button class="btn-secondary" onclick="importTicketsFromCSV()">📂 CSVを取込</button>
+        <button class="btn-secondary" onclick="importTicketsFromCSV()">📂 CSVデータを一覧に追加</button>
         <span class="success-msg" id="tickets-saved"></span>
       </div>
       <div class="section-card">
@@ -161,6 +161,20 @@
       <div class="row-btns">
         <button class="btn-secondary" onclick="exportCSV()">📤 CSVエクスポート</button>
         <button class="btn-danger" onclick="confirmReset('all')">全データリセット</button>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-password">
+      <div class="section-card">
+        <div class="section-card-title">管理パスワード変更</div>
+        <div class="form-group"><div class="form-label">現在のパスワード</div><input type="password" class="form-input" id="pw-current" placeholder="現在のパスワードを入力"></div>
+        <div class="form-group"><div class="form-label">新しいパスワード</div><input type="password" class="form-input" id="pw-new" placeholder="新しいパスワードを入力"></div>
+        <div class="form-group"><div class="form-label">新しいパスワード（確認）</div><input type="password" class="form-input" id="pw-confirm" placeholder="もう一度入力"></div>
+        <div class="login-error" id="pw-error"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn-save" onclick="changePassword()">🔑 パスワードを変更</button>
+        <span class="success-msg" id="pw-saved">✅ 変更しました！</span>
       </div>
     </div>
   </div>
