@@ -339,8 +339,10 @@ function openAddPrize(){
 
 function deletePrize(id){
   const data=loadData();const prize=data.prizes.find(p=>p.id===id);if(!prize)return;
-  data.settings.totalWinners-=prize.remainingWinners;data.settings.remainingWinners-=prize.remainingWinners;
-  data.prizes=data.prizes.filter(p=>p.id!==id);saveData(data);renderPrizeList();
+  pendingPrizeId=id;
+  document.getElementById('confirm-title').textContent='当選商品の削除';
+  document.getElementById('confirm-msg').textContent=`「${prize.name}」を削除します。この操作は取り消せません。`;
+  document.getElementById('confirm-overlay').classList.add('show');
 }
 
 function importTicketsFromCSV(){
@@ -431,6 +433,7 @@ function exportTicketsCSV(){
 }
 
 let pendingReset=null;
+let pendingPrizeId=null;
 function confirmReset(type){
   pendingReset=type;
   document.getElementById('confirm-title').textContent=type==='all'?'全データリセット':'チケットリセット';
@@ -438,11 +441,16 @@ function confirmReset(type){
   document.getElementById('confirm-overlay').classList.add('show');
 }
 document.getElementById('confirm-ok').addEventListener('click',()=>{
+  if(pendingPrizeId){
+    const d=loadData();const prize=d.prizes.find(p=>p.id===pendingPrizeId);
+    if(prize){d.settings.totalWinners-=prize.remainingWinners;d.settings.remainingWinners-=prize.remainingWinners;d.prizes=d.prizes.filter(p=>p.id!==pendingPrizeId);saveData(d);}
+    closeConfirm();renderPrizeList();return;
+  }
   if(pendingReset==='all')localStorage.removeItem(STORAGE_KEY);
   else if(pendingReset==='tickets'){const d=loadData();d.tickets=[];saveData(d)}
   closeConfirm();renderAdmin();
 });
-function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');pendingReset=null}
+function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');pendingReset=null;pendingPrizeId=null;}
 
 (function init(){
   const data=loadData();applyDesign(data.design);showPage('main');
