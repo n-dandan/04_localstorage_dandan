@@ -1,11 +1,22 @@
 const STORAGE_KEY='roulette_app';
 const COLORS=['#FF6B9D','#FFD93D','#6BCFB5','#C084FC','#FF8C69','#60A5FA','#F472B6'];
 
+// LocalStorageからアプリデータを読み込む。データがない or 壊れていればデフォルト値を返す
 function loadData(){const r=localStorage.getItem(STORAGE_KEY);if(!r)return getDefault();try{return JSON.parse(r)}catch{return getDefault()}}
+
+// アプリデータをLocalStorageに保存する
 function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d))}
 
+// アプリの初期データ（設定・商品・デザイン・チケット50件）を返す
 function getDefault(){return{
-  settings:{eventName:'イベント抽選システム',totalWinners:10,remainingWinners:10,loseMessage:'残念！またチャレンジしてね！',adminPassword:'1234',lastInputMethod:'text'},
+  settings:{
+    eventName:'イベント抽選システム',
+    totalWinners:10,
+    remainingWinners:10,
+    loseMessage:'残念！またチャレンジしてね！',
+    adminPassword:'1234',
+    lastInputMethod:'text'
+  },
   prizes:[
     {id:'prize-001',name:'サイン入りポスター',imageUrl:null,winMessage:'サイン入りポスターが当たりました！',totalWinners:5,remainingWinners:5,winners:[]},
     {id:'prize-002',name:'チェキ',imageUrl:null,winMessage:'チェキが当たりました！',totalWinners:3,remainingWinners:3,winners:[]},
@@ -41,6 +52,7 @@ function getDefault(){return{
   ]
 }}
 
+// 指定ページを表示する。抽選画面(main)では残り当選数が0の場合にsoldout画面へ切り替える
 function showPage(page){
   stopScanner();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -59,8 +71,10 @@ function showPage(page){
   }
 }
 
+// ログイン画面へ遷移する
 function goToLogin(){showPage('login')}
 
+// 「管理画面へ」ボタンの連打カウンター。10回タップで管理画面へ遷移、5秒無操作でカウントリセット
 let adminNavCount=0;
 let adminNavTimer=null;
 function handleAdminNav(){
@@ -80,6 +94,7 @@ function handleAdminNav(){
   },5000);
 }
 
+// 抽選画面のヘッダー・イベント名・残り当選数・入力タブ選択状態を更新する
 function renderMain(data){
   const s=data.settings;
   document.getElementById('header-event-name').textContent='🎪 '+s.eventName;
@@ -88,6 +103,7 @@ function renderMain(data){
   document.querySelectorAll('.method-tab').forEach(t=>{t.classList.toggle('active',t.dataset.method===s.lastInputMethod)});
 }
 
+// 入力方式タブ（テキスト/スキャン）の切り替えイベント。スキャン選択時はカメラを起動する
 document.querySelectorAll('.method-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('active'));
@@ -105,6 +121,7 @@ document.querySelectorAll('.method-tab').forEach(tab=>{
 
 let html5QrCode=null;
 
+// QR・バーコードスキャナーを起動し、読み取り成功時にチケット入力欄へセットする
 function startScanner(){
   const wrap=document.getElementById('qr-reader-wrap');
   wrap.style.display='block';
@@ -133,6 +150,7 @@ function startScanner(){
   });
 }
 
+// スキャナーを停止し、カメラ映像エリアを非表示にする
 function stopScanner(){
   if(!html5QrCode)return;
   const qr=html5QrCode;
@@ -149,7 +167,9 @@ let isSpinning=false;
 document.getElementById('btn-start').addEventListener('click',startRoulette);
 document.getElementById('ticket-input').addEventListener('keydown',e=>{if(e.key==='Enter')startRoulette()});
 
+// 抽選メイン処理。チケット検証 → ルーレットアニメーション → 当落判定 → 結果保存の順で実行する
 function startRoulette(){
+  // チケット検証処理
   if(isSpinning)return;
   const ticketId=document.getElementById('ticket-input').value.trim().toUpperCase();
   if(!ticketId){showError('入力エラー','チケット番号を入力してください。');return}
@@ -161,8 +181,10 @@ function startRoulette(){
     showError(anomaly?'システムエラー':'使用済みエラー',anomaly?'このチケットは処理中にエラーが発生しました。\nスタッフにお問い合わせください。':'このチケットはすでに使用済みです。\n1枚につき1回のみ有効です。');
     return;
   }
+  // 抽選を行っていない人がいても、当選商品がなくなった場合は抽選を終了する。必要ない場合はこの処理をコメントアウトする。
   if(data.settings.remainingWinners<=0){showError('終了','本日の抽選はすべて終了しました。');return}
 
+  // ルーレットアニメーション
   isSpinning=true;
   document.getElementById('btn-start').disabled=true;
   document.getElementById('ticket-input').disabled=true;
@@ -172,6 +194,8 @@ function startRoulette(){
   ring.className='roulette-ring spinning';
   emoji.textContent='🌀';label.textContent='SPINNING';
 
+  // 当落判定
+  // 抽選処理：(残り当選数)/(残り抽選者数)で抽選される
   const availablePrizes=data.prizes.filter(p=>p.remainingWinners>0);
   let result=null,wonPrize=null;
   if(availablePrizes.length>0){
@@ -182,6 +206,7 @@ function startRoulette(){
     }
   }
 
+  // 結果保存
   setTimeout(()=>{
     ring.className='roulette-ring stopping';
     setTimeout(()=>{
@@ -215,19 +240,27 @@ function startRoulette(){
   },2000);
 }
 
+// 当選オーバーレイを表示する
 function showWin(prize){
   document.getElementById('win-prize-name').textContent='🏆 '+prize.name;
   document.getElementById('win-message').textContent=prize.winMessage;
   document.getElementById('overlay-win').classList.add('show');
 }
+
+// ハズレオーバーレイを表示する
 function showLose(msg){document.getElementById('lose-message').textContent=msg;document.getElementById('overlay-lose').classList.add('show')}
+
+// エラーオーバーレイをタイトル・メッセージ付きで表示する
 function showError(title,msg){document.getElementById('error-title').textContent=title;document.getElementById('error-message').textContent=msg;document.getElementById('overlay-error').classList.add('show')}
+
+// 指定種別のオーバーレイを閉じ、ルーレット表示をREADY状態に戻す
 function closeOverlay(type){
   document.getElementById('overlay-'+type).classList.remove('show');
   document.getElementById('roulette-emoji').textContent='🎯';
   document.getElementById('roulette-label').textContent='READY';
 }
 
+// 当選時に紙吹雪アニメーションを30個生成して画面に降らせる
 function launchConfetti(){
   for(let i=0;i<30;i++){
     const el=document.createElement('div');el.className='confetti-piece';
@@ -238,6 +271,7 @@ function launchConfetti(){
   }
 }
 
+// 管理パスワードを照合し、正しければ管理画面へ遷移する
 function doLogin(){
   const pw=document.getElementById('login-pw').value;
   const data=loadData();
@@ -249,6 +283,7 @@ function doLogin(){
 }
 document.getElementById('login-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 
+// 管理画面のタブ切り替えイベント。タブに応じて各リストを再描画する
 document.querySelectorAll('.admin-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
@@ -261,6 +296,7 @@ document.querySelectorAll('.admin-tab').forEach(tab=>{
   });
 });
 
+// 管理画面を開いたときに全フォームをLocalStorageの値で初期化する
 function renderAdmin(){
   const data=loadData();const s=data.settings;
   document.getElementById('s-eventName').value=s.eventName;
@@ -272,6 +308,7 @@ function renderAdmin(){
   renderPrizeList();renderTicketList();renderHistory();
 }
 
+// 基本設定・デザイン設定のフォーム内容を保存し、デザインを即時反映する
 function saveSettings(){
   const data=loadData();
   data.settings.eventName=document.getElementById('s-eventName').value||data.settings.eventName;
@@ -288,6 +325,7 @@ function saveSettings(){
   if(msg){msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);}
 }
 
+// 現在のパスワードを照合してから新パスワードに更新する
 function changePassword(){
   const current=document.getElementById('pw-current').value;
   const nw=document.getElementById('pw-new').value;
@@ -307,8 +345,10 @@ function changePassword(){
   msg.classList.add('show');setTimeout(()=>msg.classList.remove('show'),2000);
 }
 
+// CSS変数 --bg を更新して背景色をページ全体に即時反映する
 function applyDesign(design){document.documentElement.style.setProperty('--bg',design.backgroundColor)}
 
+// 当選商品一覧を描画し、合計当選数を更新する
 function renderPrizeList(){
   const data=loadData();const el=document.getElementById('prize-list');
   const total=data.prizes.reduce((s,p)=>s+p.totalWinners,0);
@@ -327,6 +367,7 @@ function renderPrizeList(){
     </div>`).join('');
 }
 
+// promptで商品名・当選数・当選コメントを入力して新しい当選商品を追加する
 function openAddPrize(){
   const name=prompt('商品名を入力してください');if(!name)return;
   const total=parseInt(prompt('当選数を入力してください'));if(isNaN(total)||total<1)return;
@@ -337,6 +378,7 @@ function openAddPrize(){
   saveData(data);renderPrizeList();
 }
 
+// 削除確認ダイアログを表示する（実際の削除はconfirm-okボタンで実行）
 function deletePrize(id){
   const data=loadData();const prize=data.prizes.find(p=>p.id===id);if(!prize)return;
   pendingPrizeId=id;
@@ -345,6 +387,7 @@ function deletePrize(id){
   document.getElementById('confirm-overlay').classList.add('show');
 }
 
+// CSVファイルからチケットIDを読み込んで一覧に追加する（BOM・ヘッダー行を自動スキップ）
 function importTicketsFromCSV(){
   const fileInput=document.getElementById('ticket-csv-input');
   const file=fileInput.files[0];if(!file)return;
@@ -366,6 +409,7 @@ function importTicketsFromCSV(){
   reader.readAsText(file,'UTF-8');
 }
 
+// テキストエリアに1行1件で入力されたチケットIDを一覧に追加する
 function importTickets(){
   const raw=document.getElementById('ticket-import-area').value.trim();if(!raw)return;
   const ids=raw.split('\n').map(l=>l.trim().toUpperCase()).filter(Boolean);
@@ -376,6 +420,7 @@ function importTickets(){
   setTimeout(()=>msg.classList.remove('show'),2000);renderTicketList();
 }
 
+// チケット一覧を未使用・使用済・ハズレ・当選のステータス付きで描画する
 function renderTicketList(){
   const data=loadData();const el=document.getElementById('ticket-list');
   if(!data.tickets.length){el.innerHTML='<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:8px">チケットが登録されていません</div>';return}
@@ -388,30 +433,7 @@ function renderTicketList(){
   }).join('');
 }
 
-function renderHistory(){
-  const data=loadData();
-  const winners=data.tickets.filter(t=>t.result&&t.result!=='lose');
-  const el=document.getElementById('history-list');
-  if(!winners.length){el.innerHTML='<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:8px">当選者はまだいません</div>';return}
-  el.innerHTML=winners.map(t=>{
-    const prize=data.prizes.find(p=>p.id===t.result);
-    const time=t.usedAt?new Date(t.usedAt).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'-';
-    return `<div class="history-row"><span class="history-ticket">${t.id}</span><span class="history-result win">${prize?prize.name:t.result}</span><span class="history-time">${time}</span></div>`;
-  }).join('');
-}
-
-function exportCSV(){
-  const data=loadData();
-  const winners=data.tickets.filter(t=>t.result&&t.result!=='lose');
-  const csv='チケットID,当選商品,抽選日時\n'+winners.map(t=>{
-    const prize=data.prizes.find(p=>p.id===t.result);
-    return `${t.id},${prize?prize.name:t.result},${t.usedAt||''}`;
-  }).join('\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='当選履歴.csv';a.click();URL.revokeObjectURL(url);
-}
-
+// チケット一覧全件（ステータス・当選商品・日時含む）をCSVファイルとしてエクスポートする
 function exportTicketsCSV(){
   const data=loadData();
   const rows=data.tickets.map(t=>{
@@ -432,6 +454,33 @@ function exportTicketsCSV(){
   const a=document.createElement('a');a.href=url;a.download='チケット一覧.csv';a.click();URL.revokeObjectURL(url);
 }
 
+// 当選したチケットだけを抽出して当選履歴一覧を描画する
+function renderHistory(){
+  const data=loadData();
+  const winners=data.tickets.filter(t=>t.result&&t.result!=='lose');
+  const el=document.getElementById('history-list');
+  if(!winners.length){el.innerHTML='<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:8px">当選者はまだいません</div>';return}
+  el.innerHTML=winners.map(t=>{
+    const prize=data.prizes.find(p=>p.id===t.result);
+    const time=t.usedAt?new Date(t.usedAt).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'-';
+    return `<div class="history-row"><span class="history-ticket">${t.id}</span><span class="history-result win">${prize?prize.name:t.result}</span><span class="history-time">${time}</span></div>`;
+  }).join('');
+}
+
+// 当選履歴をCSVファイルとしてエクスポートする（BOM付きでExcel対応）
+function exportCSV(){
+  const data=loadData();
+  const winners=data.tickets.filter(t=>t.result&&t.result!=='lose');
+  const csv='チケットID,当選商品,抽選日時\n'+winners.map(t=>{
+    const prize=data.prizes.find(p=>p.id===t.result);
+    return `${t.id},${prize?prize.name:t.result},${t.usedAt||''}`;
+  }).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='当選履歴.csv';a.click();URL.revokeObjectURL(url);
+}
+
+// リセット操作（全リセット・チケットリセット・商品削除）の確認ダイアログを表示する
 let pendingReset=null;
 let pendingPrizeId=null;
 function confirmReset(type){
@@ -440,6 +489,8 @@ function confirmReset(type){
   document.getElementById('confirm-msg').textContent=type==='all'?'すべてのデータが削除されます。この操作は取り消せません。':'チケット一覧がリセットされます。よろしいですか？';
   document.getElementById('confirm-overlay').classList.add('show');
 }
+
+// リセットの確認ダイアログのOKボタン。pendingPrizeId（商品削除）またはpendingReset（リセット）を実行する
 document.getElementById('confirm-ok').addEventListener('click',()=>{
   if(pendingPrizeId){
     const d=loadData();const prize=d.prizes.find(p=>p.id===pendingPrizeId);
@@ -450,8 +501,11 @@ document.getElementById('confirm-ok').addEventListener('click',()=>{
   else if(pendingReset==='tickets'){const d=loadData();d.tickets=[];saveData(d)}
   closeConfirm();renderAdmin();
 });
+
+// 確認ダイアログを閉じ、保留中のアクションをクリアする
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');pendingReset=null;pendingPrizeId=null;}
 
+// アプリ起動時の初期化。デザイン適用 → 抽選画面表示
 (function init(){
   const data=loadData();applyDesign(data.design);showPage('main');
 })();
