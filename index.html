@@ -17,30 +17,38 @@
     <a class="btn-admin-nav" id="admin-nav-btn" onclick="handleAdminNav()">管理画面へ</a>
   </div>
   <div class="main-content">
-    <div class="event-name" id="display-event-name">Loading...</div>
-    <div class="roulette-wrap">
-      <div class="roulette-pointer"></div>
-      <div class="roulette-ring" id="roulette-ring">
-        <div class="roulette-center">
-          <span class="roulette-emoji" id="roulette-emoji">🎯</span>
-          <span class="roulette-label" id="roulette-label">READY</span>
+    <div class="main-left">
+      <div class="event-name" id="display-event-name">Loading...</div>
+      <div class="roulette-wrap">
+        <div class="roulette-pointer"></div>
+        <div class="roulette-ring" id="roulette-ring">
+          <div class="roulette-center">
+            <span class="roulette-emoji" id="roulette-emoji">🎯</span>
+            <span class="roulette-label" id="roulette-label">READY</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="remaining-card">
-      <div class="remaining-num" id="remaining-num">0</div>
-      <div class="remaining-label">残り当選数</div>
-    </div>
-    <div class="input-section">
-      <div class="input-method-tabs">
-        <div class="method-tab active" data-method="text">テキスト入力</div>
-        <div class="method-tab" data-method="scan">QRコード/バーコードを読み込む</div>
+      <div class="remaining-card">
+        <div class="remaining-num" id="remaining-num">0</div>
+        <div class="remaining-label">残り当選数</div>
       </div>
-      <div id="qr-reader-wrap">
-        <div id="qr-reader"></div>
+    </div>
+    <div class="main-right">
+      <div class="input-section">
+        <div id="qr-reader-wrap">
+          <div id="qr-reader-placeholder">
+            <span>📷</span>
+            <span>カメラを起動中...</span>
+          </div>
+          <div id="qr-reader"></div>
+        </div>
+        <div class="input-method-tabs">
+          <div class="method-tab active" data-method="text">テキスト入力</div>
+          <div class="method-tab" data-method="scan">QRコード/バーコードを読み込む</div>
+        </div>
+        <input type="text" class="ticket-input" id="ticket-input" placeholder="チケット番号を入力" maxlength="20">
+        <button class="btn-start" id="btn-start">🎰 抽選スタート！</button>
       </div>
-      <input type="text" class="ticket-input" id="ticket-input" placeholder="チケット番号を入力" maxlength="20">
-      <button class="btn-start" id="btn-start">🎰 抽選スタート！</button>
     </div>
   </div>
 </div>

@@ -124,7 +124,7 @@ let html5QrCode=null;
 // QR・バーコードスキャナーを起動し、読み取り成功時にチケット入力欄へセットする
 function startScanner(){
   const wrap=document.getElementById('qr-reader-wrap');
-  wrap.style.display='block';
+  wrap.classList.remove('scanning');
   const formats=[
     Html5QrcodeSupportedFormats.QR_CODE,
     Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,
@@ -140,8 +140,9 @@ function startScanner(){
       stopScanner();
     },
     ()=>{}
-  ).catch(()=>{
-    wrap.style.display='none';
+  ).then(()=>{
+    wrap.classList.add('scanning');
+  }).catch(()=>{
     html5QrCode=null;
     showError('カメラエラー','カメラへのアクセスができませんでした。\nブラウザの設定を確認してください。');
     document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('active'));
@@ -155,11 +156,12 @@ function stopScanner(){
   if(!html5QrCode)return;
   const qr=html5QrCode;
   html5QrCode=null;
+  const wrap=document.getElementById('qr-reader-wrap');
   qr.stop().then(()=>{
     qr.clear();
-    document.getElementById('qr-reader-wrap').style.display='none';
+    wrap.classList.remove('scanning');
   }).catch(()=>{
-    document.getElementById('qr-reader-wrap').style.display='none';
+    wrap.classList.remove('scanning');
   });
 }
 
