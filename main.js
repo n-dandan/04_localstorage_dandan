@@ -369,15 +369,33 @@ function renderPrizeList(){
     </div>`).join('');
 }
 
-// promptで商品名・当選数・当選コメントを入力して新しい当選商品を追加する
+// 当選商品追加モーダルを開く
 function openAddPrize(){
-  const name=prompt('商品名を入力してください');if(!name)return;
-  const total=parseInt(prompt('当選数を入力してください'));if(isNaN(total)||total<1)return;
-  const msg=prompt('当選時コメントを入力してください')||name+'が当たりました！';
+  document.getElementById('add-prize-name').value='';
+  document.getElementById('add-prize-total').value='';
+  document.getElementById('add-prize-msg').value='';
+  document.getElementById('add-prize-error').style.display='none';
+  document.getElementById('prize-add-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('add-prize-name').focus(),50);
+}
+
+// 当選商品追加モーダルを閉じる
+function closeAddPrize(){
+  document.getElementById('prize-add-overlay').classList.remove('show');
+}
+
+// モーダルの入力内容を検証して当選商品を追加する
+function submitAddPrize(){
+  const name=document.getElementById('add-prize-name').value.trim();
+  const total=parseInt(document.getElementById('add-prize-total').value);
+  const msg=document.getElementById('add-prize-msg').value.trim()||name+'が当たりました！';
+  const errEl=document.getElementById('add-prize-error');
+  if(!name){errEl.textContent='商品名を入力してください';errEl.style.display='block';return;}
+  if(isNaN(total)||total<1){errEl.textContent='当選数は1以上の数値を入力してください';errEl.style.display='block';return;}
   const data=loadData();
   data.prizes.push({id:'prize-'+Date.now(),name,imageUrl:null,winMessage:msg,totalWinners:total,remainingWinners:total,winners:[]});
   data.settings.totalWinners+=total;data.settings.remainingWinners+=total;
-  saveData(data);renderPrizeList();
+  saveData(data);closeAddPrize();renderPrizeList();
 }
 
 // 削除確認ダイアログを表示する（実際の削除はconfirm-okボタンで実行）

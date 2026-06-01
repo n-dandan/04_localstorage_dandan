@@ -38,7 +38,7 @@
         <div id="qr-reader-wrap">
           <div id="qr-reader-placeholder">
             <span>📷</span>
-            <span>カメラを起動中...</span>
+            <span>チケット番号を入力<br> または<br> QRコード/バーコードを読み込んでください</span>
           </div>
           <div id="qr-reader"></div>
         </div>
@@ -224,6 +224,20 @@
     <div class="confirm-btns">
       <button class="btn-secondary" style="flex:1" onclick="closeConfirm()">キャンセル</button>
       <button class="btn-danger" style="flex:1" id="confirm-ok">実行</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="prize-add-overlay">
+  <div class="confirm-card">
+    <div class="confirm-title">当選商品を追加</div>
+    <div class="form-group"><div class="form-label">商品名</div><input type="text" class="form-input" id="add-prize-name" placeholder="例: サイン入りポスター"></div>
+    <div class="form-group"><div class="form-label">当選数</div><input type="number" class="form-input" id="add-prize-total" min="1" placeholder="例: 5"></div>
+    <div class="form-group"><div class="form-label">当選時コメント（省略可）</div><input type="text" class="form-input" id="add-prize-msg" placeholder="例: サイン入りポスターが当たりました！"></div>
+    <div class="login-error" id="add-prize-error"></div>
+    <div class="confirm-btns">
+      <button class="btn-secondary" style="flex:1" onclick="closeAddPrize()">キャンセル</button>
+      <button class="btn-save" style="flex:1" onclick="submitAddPrize()">追加</button>
     </div>
   </div>
 </div>
