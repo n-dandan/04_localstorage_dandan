@@ -101,6 +101,14 @@ function renderMain(data){
   document.getElementById('display-event-name').textContent=s.eventName;
   document.getElementById('remaining-num').textContent=s.remainingWinners;
   document.querySelectorAll('.method-tab').forEach(t=>{t.classList.toggle('active',t.dataset.method===s.lastInputMethod)});
+  const el=document.getElementById('prize-status-list');
+  if(!el)return;
+  el.innerHTML=data.prizes.map((p,i)=>`
+    <div class="prize-status-item">
+      <div class="prize-status-dot" style="background:${COLORS[i%COLORS.length]}"></div>
+      <div class="prize-status-name">${p.name}</div>
+      <div class="prize-status-remain">${p.remainingWinners}<span>残</span></div>
+    </div>`).join('');
 }
 
 // 入力方式タブ（テキスト/スキャン）の切り替えイベント。スキャン選択時はカメラを起動する
